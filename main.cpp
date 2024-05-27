@@ -19,5 +19,11 @@ int main()
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     cam.render(world);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    std::clog << "Function took " << duration.count() << " seconds" << std::endl;
 }
