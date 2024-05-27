@@ -1,0 +1,1 @@
+.\main.exe | set-content image.ppm -encoding String
