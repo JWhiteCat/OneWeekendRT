@@ -5,6 +5,9 @@
 
 #include "hittable.h"
 #include "material.h"
+#include "image.h"
+
+#define MT
 
 class camera
 {
@@ -25,7 +28,7 @@ public:
     void render(const hittable &world)
     {
         initialize();
-
+#ifndef MT
         std::cout << "P3\n"
                   << image_width << ' ' << image_height << "\n255\n";
 
@@ -43,6 +46,26 @@ public:
                 write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
+#else
+        image img(image_width, image_height);
+
+#pragma omp parallel for schedule(dynamic, 1)
+        for (int j = 0; j < image_height; j++)
+        {
+            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            for (int i = 0; i < image_width; i++)
+            {
+                color pixel_color(0, 0, 0);
+                for (int sample = 0; sample < samples_per_pixel; sample++)
+                {
+                    ray r = get_ray(i, j);
+                    pixel_color += ray_color(r, max_depth, world);
+                }
+                (*img.data)[j * image_width + i] = pixel_samples_scale * pixel_color;
+            }
+        }
+        img.output();
+#endif
 
         std::clog << "\rDone.                 \n";
     }
